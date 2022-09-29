@@ -1,0 +1,130 @@
+getwd()
+setwd("/Users/hardyra")
+setwd("/Users/hardyra/Desktop")
+install.packages("reshape2")
+install.packages("RColorBrewer")
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+
+#Import PED information
+
+ped1kg = read.table("integrated_call_samples_v3.20130502.ALL.panel", 
+                    header = TRUE, fill = T, skip = 0, sep = "\t")
+ped1kg = ped1kg[, c(1:5)]
+names(ped1kg) = c("IID", "pop", "super_pop", "gender", "Relationship" )
+head(ped1kg)
+dim(ped1kg)
+
+pedbrazil = read.csv("POST_261_ped.csv", 
+                     header = TRUE, fill = T, skip = 0, sep = ",")
+pedbrazil = pedbrazil[, c(1:5)]
+names(pedbrazil) = c("IID", "pop", "super_pop", "gender", "Relationship" )
+head(pedbrazil)
+dim(pedbrazil)
+
+#Merge PED
+
+ped = rbind(ped1kg, pedbrazil)
+head(ped)
+dim(ped)
+
+#Import MDS- multidimensional scaling analysis (ancestry)
+
+mds = read.delim("POST_261_Merged1KG_maf20.matched.merged.mds", header = T, sep = "")
+head(mds)
+dim(mds)
+
+#Merge MDS and PED 
+
+mds.ped = merge(mds, ped, by = "IID", sort = T)
+head(mds.ped)
+tail(mds.ped)
+dim(mds.ped)
+table(mds.ped$super_pop)
+table(mds.ped$pop)
+class(mds.ped$super_pop)
+mds.ped$super_pop = factor(mds.ped$super_pop, levels = c("AFR", "AMR", "EAS", "EUR", "SAS", "BRA"))
+
+##some of my files are writing as duplicates so all command was removed
+
+#plot merged MDS data
+
+
+mds.ped$label = c("")
+mds.ped[(mds.ped$super_pop == "AFR"),]$label = c("African")
+mds.ped[(mds.ped$super_pop == "AMR"),]$label = c("Admixed American")
+mds.ped[(mds.ped$super_pop == "EAS"),]$label = c("East Asian")
+mds.ped[(mds.ped$super_pop == "EUR"),]$label = c("European")
+mds.ped[(mds.ped$super_pop == "SAS"),]$label = c("South Asian")
+mds.ped[(mds.ped$super_pop == "BRA"),]$label = c("Brazil")
+table(mds.ped$label)
+table(mds.ped$super_pop)
+
+ggplot(mds.ped, aes(C1, C4, color = super_pop)) +
+  geom_point(shape = 20, size = 2, alpha = 0.8) +
+  #geom_point(data = mds.ped[grepl("BRA", mds.ped$super_pop),], color = "orange", shape = 20, size = 2) +
+  theme_classic() +
+  theme(text = element_text(size = 20),
+        axis.text = element_text(size = 20),
+        plot.title = element_text(size = 28, hjust = 0.5),
+        legend.position="bottom") +
+  xlab("PC1") +
+  ylab("PC2")
+
+
+ggsave("Ancestry_MDS_maf20.png")
+
+
+## Plot PCA from Plink 
+
+#import pca
+
+eigenvec <- read.table('POST_261_Merged1KG_maf20.matched.merged.eigenvec', header = FALSE, skip=0, sep = ' ')
+head(eigenvec)
+
+#Modify pca column headings
+
+eigenvec <- eigenvec[,2:ncol(eigenvec)]
+head(eigenvec)
+colnames(eigenvec) [1] <- c('IID') 
+colnames(eigenvec) [2:21] <- c('PC1', 'PC2', 'PC3', 'PC4', 'PC5', 'PC6', 'PC7', 'PC8', 'PC9', 'PC10', 'PC11', 'PC12', 'PC13', 'PC14', 'PC15', 'PC16', 'PC17', 'PC18', 'PC19', 'PC20')
+
+#Merge pca and ped
+
+eigenvec.ped = merge(eigenvec, ped, by = "IID", sort = T)
+head(eigenvec.ped)
+tail(eigenvec.ped)
+dim(eigenvec.ped)
+table(eigenvec.ped$super_pop)
+table(eigenvec.ped$pop)
+class(eigenvec.ped$super_pop)
+eigenvec.ped$super_pop = factor(eigenvec.ped$super_pop, levels = c("AFR", "AMR", "EAS", "EUR", "SAS", "BRA"))
+
+
+#plot merged PCA data
+
+
+eigenvec.ped$label = c("")
+eigenvec.ped[(eigenvec.ped$super_pop == "AFR"),]$label = c("African")
+eigenvec.ped[(eigenvec.ped$super_pop == "AMR"),]$label = c("Admixed American")
+eigenvec.ped[(eigenvec.ped$super_pop == "EAS"),]$label = c("East Asian")
+eigenvec.ped[(eigenvec.ped$super_pop == "EUR"),]$label = c("European")
+eigenvec.ped[(eigenvec.ped$super_pop == "SAS"),]$label = c("South Asian")
+eigenvec.ped[(eigenvec.ped$super_pop == "BRA"),]$label = c("Brazil")
+table(eigenvec.ped$label)
+table(eigenvec.ped$super_pop)
+
+ggplot(eigenvec.ped, aes(PC1, PC2, color = super_pop)) +
+  geom_point(shape = 20, size = 2, alpha = 0.8) +
+  theme_classic() +
+  theme(text = element_text(size = 20),
+        axis.text = element_text(size = 20),
+        plot.title = element_text(size = 28, hjust = 0.5),
+        legend.position="bottom") +
+  xlab("PC1") +
+  ylab("PC2")
+
+ggsave("Ancestry_PCA_maf20.png")
+
+
