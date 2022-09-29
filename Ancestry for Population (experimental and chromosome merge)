@@ -1,0 +1,39 @@
+#!/bin/bash
+set -e
+
+module load samtools
+module load plink/1.9.0-beta4.4
+
+bcftools norm -m-any --check-ref w -f hg38.fa POST_261.vcf | bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' | bcftools norm -Ob --rm-dup both > POST_261.bcf
+bcftools index POST_261.bcf
+
+plink --noweb --bcf POST_261.bcf --keep-allele-order --vcf-idspace-to _ --const-fid --allow-extra-chr 0 --split-x b37 no-fail --make-bed --memory 240000 --out POST_261.genotypes
+plink --bfile POST_261.genotypes --indiv-sort natural --make-bed --out POST_261.genotypes
+
+
+
+mkdir Pruned_261_maf20
+plink --noweb --bfile POST_261.genotypes --maf 0.10 --indep 50 5 1.5 --out Pruned_261_maf20/POST_261.genotypes
+plink --noweb --bfile POST_261.genotypes --extract Pruned_261_maf20/POST_261.genotypes.prune.in --make-bed --out Pruned_261_maf20/POST_261.genotypes
+
+#run the remaining steps in sinteractive in /data/hardyra:
+
+find . -name "*.bim" | grep -e "Pruned_261_maf20" > POST_261_SNP_ForMerge.list
+sed -i 's/.bim//g' POST_261_SNP_ForMerge.list
+plink --merge-list POST_261_SNP_ForMerge.list --out POST_261_maf20
+
+## merge experimental files and chromosomes 
+
+plink --bfile Merged1KG_maf20 --extract POST_261_maf20.bim --allow-extra-chr 0 --make-bed --out Merged1KG_maf20.matched
+plink --bfile POST_261_maf20 --bmerge Merged1KG_maf20.matched.bed Merged1KG_maf20.matched.bim Merged1KG_maf20.matched.fam --make-bed --out POST_261_Merged1KG_maf20.matched.merged   
+
+#Create MDS
+plink --bfile POST_261_Merged1KG_maf20.matched.merged --genome --threads 10 --out POST_261_Merged1KG_maf20.matched.merged
+plink --bfile POST_261_Merged1KG_maf20.matched.merged --cluster --mds-plot 6 --out POST_261_Merged1KG_maf20.matched.merged
+
+#Create PCA
+plink --bfile POST_261_Merged1KG_maf20.matched.merged --pca
+mv plink.eigenvec POST_261_Merged1KG_maf20.matched.merged.eigenvec
+
+scp hardyra@helix.nih.gov:/data/hardyra/POST_261_Merged1KG_maf20.matched.merged.mds Desktop/
+scp hardyra@helix.nih.gov:/data/hardyra/ POST_261_Merged1KG_maf20.matched.merged.eigenvec Desktop/
