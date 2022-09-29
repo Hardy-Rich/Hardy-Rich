@@ -1,0 +1,28 @@
+#!/bin/bash
+set -e
+module load samtools
+module load bcftools
+module load picard
+
+## Code to use with each chromosome.
+## Best to run as swarm job
+
+#bcftools annotate --rename-chrs chr_name_con.txt /data/Hanserv/Reference/1000Genomes/ALL.*.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz | bgzip > ALL.*.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes_newchr.vcf.gz
+
+#java -jar $PICARDJARPATH/picard.jar LiftoverVcf -I ALL.*.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes_newchr.vcf.gz -O ALL.*.genotypes_38_lifted.vcf -C hg19toHg38.over.chain --REJECT rejected_variants.vcf -R hg38.fa
+
+
+## To run as a swarm:
+
+#!/bin/bash
+set -e
+module load samtools
+module load bcftools
+module load picard
+
+FILE=$1
+PAT=$(echo "${FILE}" | sed -e 's/.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz//g')
+
+bcftools annotate --rename-chrs chr_name_con.txt ${PAT}.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz | bgzip > ${PAT}.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes_newchr.vcf.gz
+
+java -jar $PICARDJARPATH/picard.jar LiftoverVcf -I ${PAT}.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes_newchr.vcf.gz -O ${PAT}.genotypes_38_lifted.vcf -C hg19toHg38.over.chain --REJECT rejected_variants.vcf -R hg38.fa
