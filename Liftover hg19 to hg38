@@ -4,10 +4,27 @@ module load samtools
 module load bcftools
 module load picard
 
+#Create a merged file with all the chromosomes (ALLChrmerge.sh)
+#!/bin/bash
+set -e
+module load samtools
+
+bcftools merge --force-samples /data/Hanserv/Reference/1000Genomes/ALL.*.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz -Oz -o ALLchr_hg19_genotypes.gz
+
+#Obtain the chain:
+wget --timestamping 'ftp://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz' -O hg19toHg38.over.chain.gz
+
+#Modify Vcf file to have “chr” as header:
+#Create chr conversion text:
+echo "1 chr1" >> chr_name_conv.txt 
+echo "2 chr2" >> chr_name_conv.txt
+#continue until chr 22
+
+
 ## Code to use with each chromosome.
 ## Best to run as swarm job
 
-#bcftools annotate --rename-chrs chr_name_con.txt /data/Hanserv/Reference/1000Genomes/ALL.*.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz | bgzip > ALL.*.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes_newchr.vcf.gz
+#bcftools annotate --rename-chrs chr_name_con.txt /data/Hanserv/Reference/1000Genomes/ALL.*.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz | bgzip > ALL.*.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes_newchr.vcf.gz        
 
 #java -jar $PICARDJARPATH/picard.jar LiftoverVcf -I ALL.*.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes_newchr.vcf.gz -O ALL.*.genotypes_38_lifted.vcf -C hg19toHg38.over.chain --REJECT rejected_variants.vcf -R hg38.fa
 
@@ -26,3 +43,6 @@ PAT=$(echo "${FILE}" | sed -e 's/.phase3_shapeit2_mvncall_integrated_v5b.2013050
 bcftools annotate --rename-chrs chr_name_con.txt ${PAT}.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz | bgzip > ${PAT}.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes_newchr.vcf.gz
 
 java -jar $PICARDJARPATH/picard.jar LiftoverVcf -I ${PAT}.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes_newchr.vcf.gz -O ${PAT}.genotypes_38_lifted.vcf -C hg19toHg38.over.chain --REJECT rejected_variants.vcf -R hg38.fa
+
+
+
