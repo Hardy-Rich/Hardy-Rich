@@ -1,0 +1,63 @@
+## This is showing the main script to be run. You should run one chromosome first to create the main pruned folder and run remaining as a swarm 
+
+#First chromosome script to run##
+
+
+#!/bin/bash
+set -e
+
+module load samtools
+module load bcftools
+module load plink/1.9.0-beta4.4
+
+
+bcftools norm -m-any --check-ref w -f hg38.fa ALL.chr1.genotypes_38_lifted.vcf | bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' | bcftools norm -Ob --rm-dup both > ALL.chr1.bcf
+bcftools index ALL.chr1.bcf
+plink --noweb --bcf ${PAT}.bcf --keep-allele-order --vcf-idspace-to _ --const-fid --allow-extra-chr 0 --split-x b38 no-fail --make-bed --memory 240000 --out  ALL.chr1.genotypes
+plink --bfile ALL.chr1.genotypes --indiv-sort natural --make-bed --out ALL.chr1.genotypes
+
+mkdir Pruned_Chr_maf20
+plink --noweb --bfile ALL.chr1.genotypes --maf 0.20 --indep 50 5 1.5 --out Pruned_Chr_maf20/ALL.chr1.genotypes
+plink --noweb --bfile ALL.chr1.genotypes --extract Pruned_Chr_maf20/ALL.chr1.genotypes.prune.in --make-bed --out Pruned_Chr_maf20/ALL.chr1.genotypes
+
+
+
+#After runnfing the first chromosome, run the remaining as a swarm for chromosomes 2-22
+
+#!/bin/bash
+set -e
+
+module load samtools
+module load bcftools
+module load plink/1.9.0-beta4.4
+
+FILE=$1
+PAT=$(echo "${FILE}" | sed -e 's/.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz//g')
+bcftools norm -m-any --check-ref w -f hg38.fa ${PAT}.genotypes_38_lifted.vcf | bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' | bcftools norm -Ob --rm-dup both > ${PAT}.bcf
+bcftools index ${PAT}.bcf
+plink --noweb --bcf ${PAT}.bcf --keep-allele-order --vcf-idspace-to _ --const-fid --allow-extra-chr 0 --split-x b38 no-fail --make-bed --memory 240000 --out ${PAT}.genotypes
+plink --bfile ${PAT}.genotypes --indiv-sort natural --make-bed --out ${PAT}.genotypes
+
+mkdir Pruned_Chr_${PAT}_maf20
+plink --noweb --bfile ${PAT}.genotypes --maf 0.20 --indep 50 5 1.5 --out Pruned_Chr_${PAT}_maf20/${PAT}.genotypes
+plink --noweb --bfile ${PAT}.genotypes --extract Pruned_Chr_${PAT}_maf20/${PAT}.genotypes.prune.in --make-bed --out Pruned_Chr_${PAT}_maf20/${PAT}.genotypes
+
+cp /data/hardyra/Pruned_Chr_${PAT}_maf20/${PAT}.genotypes.bim /data/hardyra/Pruned_Chr_maf20/${PAT}.genotypes.bim
+cp /data/hardyra/Pruned_Chr_${PAT}_maf20/${PAT}.genotypes.bed /data/hardyra/Pruned_Chr_maf20/${PAT}.genotypes.bed
+cp /data/hardyra/Pruned_Chr_${PAT}_maf20/${PAT}.genotypes.fam /data/hardyra/Pruned_Chr_maf20/${PAT}.genotypes.fam
+cp /data/hardyra/Pruned_Chr_${PAT}_maf20/${PAT}.genotypes.log /data/hardyra/Pruned_Chr_maf20/${PAT}.genotypes.log
+cp /data/hardyra/Pruned_Chr_${PAT}_maf20/${PAT}.genotypes.nosex /data/hardyra/Pruned_Chr_maf20/${PAT}.genotypes.nosex
+cp /data/hardyra/Pruned_Chr_${PAT}_maf20/${PAT}.genotypes.prune.in /data/hardyra/Pruned_Chr_maf20/${PAT}.genotypes.prune.in
+cp /data/hardyra/Pruned_Chr_${PAT}_maf20/${PAT}.genotypes.prune.out /data/hardyra/Pruned_Chr_maf20/${PAT}.genotypes.prune.out
+
+
+##After all of the files are in the same database (i.e Pruned_Chr_maf20), run the following in sinteractive:
+
+module load plink/1.9.0-beta4.4
+find . -name "*.bim" | grep -e "Pruned_Chr_maf20" > ChrMerge_maf20.list
+sed -i 's/.bim//g' ChrMerge_maf20.list
+plink --merge-list ChrMerge_maf20.list --out Merged1KG_maf20
+
+
+
+
