@@ -156,16 +156,20 @@ plink \
 plink \
 --bfile POST_261_EU_CA_Merged1KG_maf10.subset \
 --genome \
+--maf .01 \
 --threads 10 \
 --out POST_261_EU_CA_Merged1KG_maf10.subset
 
 
 plink \
---bfile  POST_261_EU_CA_Merged1KG_maf10.matched.merged.acgt \
+--bfile  POST_261_EU_CA_Merged1KG_maf10.subset \
 --read-genome POST_261_EU_CA_Merged1KG_maf10.subset.genome \
 --cluster \
 --mds-plot 6 \
 --out POST_261_EU_CA_Merged1KG_maf10.subset
+
+plink --bfile POST_261_EU_CA_Merged1KG_maf10.subset --pca
+mv plink.eigenvec POST_261_EU_CA_Merged1KG_maf10.subset
 
 
 ###
