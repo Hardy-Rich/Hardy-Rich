@@ -37,3 +37,98 @@ mv plink.eigenvec POST_261_Merged1KG_maf20.matched.merged.eigenvec
 
 scp hardyra@helix.nih.gov:/data/hardyra/POST_261_Merged1KG_maf20.matched.merged.mds Desktop/
 scp hardyra@helix.nih.gov:/data/hardyra/ POST_261_Merged1KG_maf20.matched.merged.eigenvec Desktop/
+
+
+plink \
+--bfile  POST_261_filter_maf10 \
+--exclude POST_261_filter_maf10.ac_gt_snps \
+--allow-extra-chr 0 \
+--make-bed \
+--threads 8 \
+--out POST_261_filter_maf10.ac_gt_snps
+
+plink \
+--bfile  Merged1KG_maf10 \
+--exclude Merged1KG_maf10.ac_gt_snps \
+--allow-extra-chr 0 \
+--make-bed \
+--threads 8 \
+--out Merged1KG_maf10.ac_gt_snps
+
+plink2 \
+--bfile Merged1KG_maf10.ac_gt_snps \
+--rm-dup force-first \
+--make-bed \
+--out Merged1KG_maf10.ac_gt_snps_rmdup
+
+plink2 \
+--bfile POST_261_filter_maf10.ac_gt_snps \
+--rm-dup force-first \
+--set-missing-var-ids @:#\$r:\$a \
+--new-id-max-allele-len 23 missing \
+--make-bed \
+--out POST_261_filter_maf10.ac_gt_snps.rmdup
+
+
+awk 'BEGIN {OFS="\t"} ($5$6 == "GC" || $5$6 == "CG" || $5$6 == "AT" || $5$6 == "TA") {print $2}' \
+POST_261_Merged1KG_maf10.matched.merged.bim  > POST_261_Merged1KG_maf10.matched.merged.acgt
+
+plink \
+--bfile  POST_261_Merged1KG_maf10.matched.merged \
+--extract POST_261_Merged1KG_maf10.matched.merged.acgt \
+--allow-extra-chr 0 \
+--make-bed \
+--threads 8 \
+--out POST_261_Merged1KG_maf10.matched.merged.acgt
+
+awk '{if(($5 ~ /A/ && $6 ~ /T/) || ($5 ~ /T/ && $6 ~ /A/) || ($5 ~ /C/ && $6 ~ /G/) || ($5 ~ /G/ && $6 ~ /C/)) print $2}' \
+POST_261_Merged1KG_maf10.matched.merged.bim > POST_261_Merged1KG_maf10.matched.merged.acgt.txt
+
+plink \
+--bfile  POST_261_Merged1KG_maf10.matched.merged \
+--exclude POST_261_Merged1KG_maf10.matched.merged.acgt.txt \
+--allow-extra-chr 0 \
+--make-bed \
+--threads 8 \
+--out POST_261_Merged1KG_maf10.matched.merged.acgt
+
+plink --bfile POST_261_Merged1KG_maf10.matched.merged.acgt --cluster --mds-plot 6 --out POST_261_Merged1KG_maf10.matched.merged.acgt
+
+plink --bfile POST_261_Merged1KG_maf10.matched.merged.acgt \
+--geno 0.05 \
+--maf 0.05 \
+--make-bed \
+--out POST_261_Merged1KG_maf10.matched.merged.acgt.final
+
+plink --bfile POST_261_Merged1KG_maf10.matched.merged.acgt.final \
+--geno 0.05 \
+--maf 0.05 \
+--max-maf .35 \
+--make-bed \
+--out POST_261_Merged1KG_maf10.matched.merged.acgt.final
+
+plink \
+--bfile POST_261_Merged1KG_maf10.matched.merged.acgt.final \
+--genome \
+--threads 10 \
+--out POST_261_Merged1KG_maf10.matched.merged.acgt.final
+
+plink \
+--bfile POST_261_Merged1KG_maf10.matched.merged.acgt.final \
+--read-genome POST_261_Merged1KG_maf10.matched.merged.acgt.final.genome \
+--cluster \
+--mds-plot 6 \
+--out POST_261_Merged1KG_maf10.matched.merged.acgt.final
+
+
+plink --bfile POST_261_Merged1KG_maf10.matched.merged.acgt.final --freq --out 1KG_merge_final
+
+scp hardyra@helix.nih.gov:/data/Hanserv/DATA/Transfusion/WGS/Reference_Chromsome/POST_261_Merged1KG_maf10.matched.merged.acgt.final.mds  Desktop/
+
+
+#plink --bfile Merged1KG_maf10.ac_gt_snps --list-duplicate-vars suppress-first --make-bed --out Merged1KG_maf10.ac_gt_snp.dup --memory 7000
+
+#grep -v '^#' POST_261_filter.recode.vcf.gz | cut -f 3 | sort | uniq -d > POST_261_filter_maf10.reference.dups
+#plink --bfile reference --exclude reference.dups --make-bed --out reference
+
+#sort -u Merged1KG_maf10.ac_gt_snps.bim > Merged1KG_maf10.ac_gt_snps.ac_gt_snps.duplicates-removed.bim
