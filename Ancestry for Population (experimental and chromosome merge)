@@ -69,6 +69,8 @@ plink2 \
 --make-bed \
 --out POST_261_filter_maf10.ac_gt_snps.rmdup
 
+###
+
 
 awk 'BEGIN {OFS="\t"} ($5$6 == "GC" || $5$6 == "CG" || $5$6 == "AT" || $5$6 == "TA") {print $2}' \
 POST_261_Merged1KG_maf10.matched.merged.bim  > POST_261_Merged1KG_maf10.matched.merged.acgt
@@ -80,6 +82,85 @@ plink \
 --make-bed \
 --threads 8 \
 --out POST_261_Merged1KG_maf10.matched.merged.acgt
+
+
+##Created a subset file to include only variants that differed by .2 allele frequency in reference and data (file = merged.txt - made in R)
+
+#plink \
+--bfile  POST_261_Merged1KG_maf10.matched.merged.acgt \
+--extract merge.txt \
+--allow-extra-chr 0 \
+--make-bed \
+--threads 8 \
+--out POST_261_Merged1KG_maf10.match.subset
+
+
+#plink \
+--bfile POST_261_Merged1KG_maf10.match.subset \
+--genome \
+--threads 10 \
+--out POST_261_Merged1KG_maf10.match.subset
+
+#plink \
+--bfile POST_261_Merged1KG_maf10.match.subset \
+--read-genome POST_261_Merged1KG_maf10.match.subset.genome \
+--cluster \
+--mds-plot 6 \
+--out POST_261_Merged1KG_maf10.match.subset
+
+plink --bfile POST_261_Merged1KG_maf10.match.subset --pca
+mv plink.eigenvec POST_261_Merged1KG_maf10.match.subset
+
+
+## EU and CA added
+plink \
+--bfile Merged1KG_maf20 \
+--extract POST_261_filter_EU_CA_maf10.bim \
+--allow-extra-chr 0 \
+--make-bed \
+--out Merged1KG_POSTCA_EU.matched
+
+plink \
+--bfile POST_261_filter_EU_CA_maf10 \
+--bmerge Merged1KG_POSTCA_EU.matched.bed Merged1KG_POSTCA_EU.matched.bim Merged1KG_POSTCA_EU.matched.fam \
+--make-bed \
+--out POST_261_EU_CA_Merged1KG_maf20.matched.merged 
+
+awk 'BEGIN {OFS="\t"} ($5$6 == "GC" || $5$6 == "CG" || $5$6 == "AT" || $5$6 == "TA") {print $2}' \
+POST_261_EU_CA_Merged1KG_maf20.matched.merged.bim  > POST_261_EU_CA_Merged1KG_maf20.matched.merged.acgt
+
+plink \
+--bfile  POST_261_EU_CA_Merged1KG_maf20.matched.merged \
+--extract POST_261_EU_CA_Merged1KG_maf20.matched.merged.acgt \
+--allow-extra-chr 0 \
+--make-bed \
+--threads 8 \
+--out POST_261_EU_CA_Merged1KG_maf10.matched.merged.acgt
+
+plink \
+--bfile  POST_261_EU_CA_Merged1KG_maf10.matched.merged.acgt \
+--extract subset.txt \
+--allow-extra-chr 0 \
+--make-bed \
+--threads 8 \
+--out POST_261_EU_CA_Merged1KG_maf10.subset
+
+plink \
+--bfile POST_261_EU_CA_Merged1KG_maf10.subset \
+--genome \
+--threads 10 \
+--out POST_261_EU_CA_Merged1KG_maf10.subset
+
+
+plink \
+--bfile  POST_261_EU_CA_Merged1KG_maf10.subset \
+--read-genome POST_261_EU_CA_Merged1KG_maf10.subset.genome \
+--cluster \
+--mds-plot 6 \
+--out POST_261_EU_CA_Merged1KG_maf10.subset
+
+
+###
 
 awk '{if(($5 ~ /A/ && $6 ~ /T/) || ($5 ~ /T/ && $6 ~ /A/) || ($5 ~ /C/ && $6 ~ /G/) || ($5 ~ /G/ && $6 ~ /C/)) print $2}' \
 POST_261_Merged1KG_maf10.matched.merged.bim > POST_261_Merged1KG_maf10.matched.merged.acgt.txt
