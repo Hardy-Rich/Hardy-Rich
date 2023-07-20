@@ -1,0 +1,34 @@
+module load plink/1.9.0-beta4.4
+
+# split by chr
+for i in {1..22}
+do 
+plink \
+--bfile POST_261_filter_EU_CA_maf10 \
+--chr ${i} \
+--make-bed \
+--out POST_261_filter_EU_CA_maf10_chr${i}
+done
+
+#phasing
+
+module load shapeit/2.r904
+
+
+for i in {1..22}
+do 
+shapeit \
+--input-bed POST_261_filter_EU_CA_maf10_chr${i}.bed POST_261_filter_EU_CA_maf10_chr${i}.bim POST_261_filter_EU_CA_maf10_chr${i}.fam \
+--input-map genetic_map_hg38_withX.txt \
+--output-max POST_261_filter_EU_CA_maf10_chr${i}_phased.haps POST_261_filter_EU_CA_maf10_chr${i}_phased.sample --thread 8 --force
+done
+
+# convert shapeit files to vcf
+for i in {1..22}
+do
+shapeit \
+-convert \
+--input-haps POST_261_filter_EU_CA_maf10_chr${i}_phased \
+--output-vcf POST_261_filter_EU_CA_maf10_chr${i}_phased.vcf
+done
+
