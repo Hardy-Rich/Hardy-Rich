@@ -17,8 +17,9 @@ do
 phase_common \
 --input POST_261_filter_EU_CA.vcf_${i}.vcf.gz \
 --region ${i} \
---map  
---output POST_261_filter_EU_CA_chr${i}.vcf.gz --thread 8
+--map genetic_maps.b38.tar \
+--thread 8 \
+--output POST_261_filter_EU_CA_chr${i}.vcf.gz 
 
 # create index file 
 for i in {1..22}
@@ -54,8 +55,8 @@ do
 rfmix \
 -f POST_261_filter_chr${i}_subset.vcf \
 -r EU_CA_chr${i}_subset.vcf \
--m mapfile-for-rfmix_24Jun2022.txt \
--g  \
+-m EU_CA_ref_map.txt  \
+-g genetic_maps.b38.tar \
 -o rfmix_allsnps_chr${i} \
 --chromosome=${i}
 done
