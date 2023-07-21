@@ -10,6 +10,12 @@ do
 bcftools view POST_261_filter_EU_CA.vcf.gz --regions ${i} -o POST_261_filter_EU_CA.vcf_${i}.vcf.gz -Oz
 done
 
+for i in {1..22}
+do
+vcftools --recode --gzvcf POST_261_filter_EU_CA.vcf.gz --chr ${i} --out POST_261_filter_EU_CA.vcf_${i}.vcf.gz
+done
+
+
 # phasing
 
 for i in {1..22}
