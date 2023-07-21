@@ -1,6 +1,68 @@
 module load plink/1.9.0-beta4.4
+module load bcftools
+module load shapeit
+module load rfmix
 
 # split by chr
+
+for i in {1..22}
+do
+bcftools view POST_261_filter_EU_CA.vcf.gz --regions ${i} -o POST_261_filter_EU_CA.vcf_${i}.vcf.gz -Oz
+done
+
+# phasing
+
+for i in {1..22}
+do
+phase_common \
+--input POST_261_filter_EU_CA.vcf_${i}.vcf.gz \
+--region ${i} \
+--map  
+--output POST_261_filter_EU_CA_chr${i}.vcf.gz --thread 8
+
+# create index file 
+for i in {1..22}
+do 
+tabix POST_261_filter_EU_CA_chr${i}.vcf.gz
+done
+
+#Subsetting
+#Create a txt file with Brazilian ID names (brazilian_sampslist_forbcftools.txt) and a txt file with EU and CA ID names (eu_ca_sampslist_forbcftools.txt)
+
+for i in {1..22}
+do
+bcftools \
+view \
+--samples-file brazilian_sampslist_forbcftools.txt \
+POST_261_filter_EU_CA_chr${i}.vcf.gz > \
+POST_261_filter_chr${i}_subset.vcf
+done
+
+for i in {1..22}
+do
+bcftools \
+view \
+--samples-file eu_ca_sampslist_forbcftools.txt \
+POST_261_filter_EU_CA_chr${i}.vcf.gz > \
+EU_CA_chr${i}_subset.vcf
+done
+
+#rfmix
+
+for i in {1..22}
+do
+rfmix \
+-f POST_261_filter_chr${i}_subset.vcf \
+-r EU_CA_chr${i}_subset.vcf \
+-m mapfile-for-rfmix_24Jun2022.txt \
+-g  \
+-o rfmix_allsnps_chr${i} \
+--chromosome=${i}
+done
+
+
+
+
 for i in {1..22}
 do 
 plink \
