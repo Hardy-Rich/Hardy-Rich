@@ -5,15 +5,13 @@ module load rfmix
 
 # split by chr
 
-for i in {1..22}
-do
-bcftools view POST_261_filter_EU_CA.vcf.gz --regions ${i} -o POST_261_filter_EU_CA.vcf_${i}.vcf.gz -Oz
-done
 
 for i in {1..22}
 do
-vcftools --recode --gzvcf POST_261_filter_EU_CA.vcf.gz --chr ${i} --out POST_261_filter_EU_CA.vcf_${i}.vcf.gz
+vcftools --recode --gzvcf POST_261_filter_EU_CA.vcf.gz --chr chr${i} --out POST_261_filter_EU_CA_chr${i}
 done
+
+bcftools +fill-AN-AC POST_261_filter_EU_CA_chr2.recode.vcf.gz -Ob -o POST_261_filter_EU_CA_chr2.recode_AC.vcf.gz
 
 
 # phasing
@@ -21,11 +19,15 @@ done
 for i in {1..22}
 do
 phase_common \
---input POST_261_filter_EU_CA.vcf_${i}.vcf.gz \
---region ${i} \
---map genetic_maps.b38.tar \
+--input POST_261_filter_EU_CA_chr2.recode.vcf.gz \
+--region 2 \
+--map chr2.b38.gmap.gz \
 --thread 8 \
---output POST_261_filter_EU_CA_chr${i}.vcf.gz 
+--output POST_261_filter_EU_CA_chr2_phase.vcf.gz
+done
+
+
+
 
 # create index file 
 for i in {1..22}
