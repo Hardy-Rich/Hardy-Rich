@@ -36,35 +36,37 @@ tabix POST_261_filter_EU_CA_chr${i}.vcf.gz
 done
 
 #Subsetting
-#Create a txt file with Brazilian ID names (brazilian_sampslist_forbcftools.txt) and a txt file with EU and CA ID names (eu_ca_sampslist_forbcftools.txt)
+#Create a txt file with Brazilian ID names (bra_samps) and a txt file with EU and CA ID names (eu_ca_sampslist_forbcftools.txt)
 
-for i in {1..22}
+for i in {2..22}
 do
 bcftools \
 view \
---samples-file brazilian_sampslist_forbcftools.txt \
-POST_261_filter_EU_CA_chr${i}.vcf.gz > \
-POST_261_filter_chr${i}_subset.vcf
+--samples-file bra_samps \
+--force-samples \
+POST_261_filter_EU_CA_chr${i}_phased.vcf.gz > \
+POST_261_filter_chr${i}_phased_subset.vcf.gz
 done
 
-for i in {1..22}
+for i in {2..22}
 do
 bcftools \
 view \
 --samples-file eu_ca_sampslist_forbcftools.txt \
-POST_261_filter_EU_CA_chr${i}.vcf.gz > \
+--force-samples \
+POST_261_filter_EU_CA_chr${i}_phased.vcf.gz > \
 EU_CA_chr${i}_subset.vcf
 done
 
 #rfmix
 
-for i in {1..22}
+for i in {2..22}
 do
 rfmix \
--f POST_261_filter_chr${i}_subset.vcf \
+-f POST_261_filter_chr${i}_phased_subset.vcf.gz \
 -r EU_CA_chr${i}_subset.vcf \
 -m EU_CA_ref_map.txt  \
--g genetic_maps.b38.tar \
+-g genetic_maps.b38.tar.gz \
 -o rfmix_allsnps_chr${i} \
 --chromosome=${i}
 done
