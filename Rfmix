@@ -124,7 +124,7 @@ for i in {1..22}; do zcat chr${i}.b38.gmap.gz | awk -F "\t" '{print $2"\t"$1"\t"
 for i in {2..22}
 do
 rfmix \
--f POST_261_filter_chr${i}_phased_subset.vcf.gz.gz \
+-f POST_261_filter_chr${i}_phased_subset.vcf.gz \
 -r EU_CA_chr${i}_subset.vcf.gz \
 -m EU_CA_ref_map.txt  \
 -g chr_bg38_rfmix.txt \
