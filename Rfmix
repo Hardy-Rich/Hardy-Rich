@@ -11,29 +11,62 @@ do
 vcftools --recode --gzvcf POST_261_filter_EU_CA.vcf.gz --chr chr${i} --out POST_261_filter_EU_CA_chr${i}
 done
 
-bcftools +fill-AN-AC POST_261_filter_EU_CA_chr2.recode.vcf.gz -Ob -o POST_261_filter_EU_CA_chr2.recode_AC.vcf.gz
+#!/bin/bash
+set -e
 
+module load samtools
+module load bcftools
+module load shapeit
 
-# phasing
+#for i in {1..22}
+#do
+#bgzip POST_261_filter_EU_CA_chr${i}.recode.vcf 
+#done
+
+#for i in {1..22}
+#do
+#tabix -p vcf POST_261_filter_EU_CA_chr${i}.recode.vcf.gz 
+#done
+
+module load bcftools
 
 for i in {1..22}
 do
-phase_common \
---input POST_261_filter_EU_CA_chr2.recode.vcf.gz \
---region 2 \
---map chr2.b38.gmap.gz \
---thread 8 \
---output POST_261_filter_EU_CA_chr2_phase.vcf.gz
+bcftools +fill-AN-AC POST_261_filter_EU_CA_chr${i}.recode.vcf.gz -Ob -o POST_261_filter_EU_CA_chr${i}.recode_AC.vcf.gz
 done
 
-
-
-
-# create index file 
 for i in {1..22}
-do 
-tabix POST_261_filter_EU_CA_chr${i}.vcf.gz
+do
+tabix -p vcf POST_261_filter_EU_CA_chr${i}.recode_AC.vcf.gz 
 done
+
+module load shapeit
+
+for i in {1..22}
+do
+phase_common --input POST_261_filter_EU_CA_chr${i}.recode_AC.vcf.gz \
+--region chr${i} \
+--map chr${i}.b38.gmap.gz \
+--thread 8 \
+--output POST_261_filter_EU_CA_chr${i}_phased.bcf
+done
+
+for i in {1..22}
+do
+bcftools view POST_261_filter_EU_CA_chr${i}_phased_cp.bcf > POST_261_filter_EU_CA_chr${i}_phased.vcf  
+done
+
+for i in {2..22}
+do
+bgzip POST_261_filter_EU_CA_chr${i}_phased.vcf 
+done
+
+for i in {2..22}
+do
+tabix -p vcf POST_261_filter_EU_CA_chr${i}_phased.vcf.gz 
+done 
+
+
 
 #Subsetting
 #Create a txt file with Brazilian ID names (bra_samps) and a txt file with EU and CA ID names (eu_ca_sampslist_forbcftools.txt)
@@ -58,15 +91,43 @@ POST_261_filter_EU_CA_chr${i}_phased.vcf.gz > \
 EU_CA_chr${i}_subset.vcf
 done
 
+#zip and index 
+
+for i in {1..22}
+do 
+bgzip POST_261_filter_chr${i}_phased_subset.vcf.gz
+done
+
+for i in {1..22}
+do 
+tabix -p vcf POST_261_filter_chr${i}_phased_subset.vcf.gz
+done
+
+for i in {1..22}
+do 
+bgzip EU_CA_chr${i}_subset.vcf
+done
+
+for i in {1..22}
+do 
+tabix -p vcf EU_CA_chr${i}_subset.vcf
+done
+
+#create genemap
+
+for i in {1..22}; do zcat chr${i}.b38.gmap.gz | awk -F "\t" '{print $2"\t"$1"\t"$3}' >> chr_bg38_rfmix.txt; done
+
+
+
 #rfmix
 
 for i in {2..22}
 do
 rfmix \
--f POST_261_filter_chr${i}_phased_subset.vcf.gz \
--r EU_CA_chr${i}_subset.vcf \
+-f POST_261_filter_chr${i}_phased_subset.vcf.gz.gz \
+-r EU_CA_chr${i}_subset.vcf.gz \
 -m EU_CA_ref_map.txt  \
--g genetic_maps.b38.tar.gz \
+-g chr_bg38_rfmix.txt \
 -o rfmix_allsnps_chr${i} \
 --chromosome=${i}
 done
@@ -90,10 +151,7 @@ module load shapeit/2.r904
 
 for i in {1..22}
 do 
-shapeit \
---input-bed POST_261_filter_EU_CA_maf10_chr${i}.bed POST_261_filter_EU_CA_maf10_chr${i}.bim POST_261_filter_EU_CA_maf10_chr${i}.fam \
---input-map genetic_map_hg38_withX.txt \
---output-max POST_261_filter_EU_CA_maf10_chr${i}_phased.haps POST_261_filter_EU_CA_maf10_chr${i}_phased.sample --thread 8 --force
+bgzip POST_261_filter_chr${i}_phased_subset.vcf.gz
 done
 
 # convert shapeit files to vcf
