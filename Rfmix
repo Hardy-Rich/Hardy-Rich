@@ -78,7 +78,7 @@ view \
 --samples-file bra_samps \
 --force-samples \
 POST_261_filter_EU_CA_chr${i}_phased.vcf.gz > \
-POST_261_filter_chr${i}_phased_subset.vcf.gz
+POST_261_filter_chr${i}_phased_subset.vcf
 done
 
 for i in {2..22}
@@ -95,7 +95,7 @@ done
 
 for i in {1..22}
 do 
-bgzip POST_261_filter_chr${i}_phased_subset.vcf.gz
+bgzip POST_261_filter_chr${i}_phased_subset.vcf
 done
 
 for i in {1..22}
