@@ -9,6 +9,9 @@ module load plink/1.9.0-beta4.4
 plink --bfile Merged1KG_maf10 --extract POST_261_filter_MatchSNPs.bim --allow-extra-chr 0 --make-bed --out Merged1KG_maf10.matched
 plink --bfile POST_261_filter_MatchSNPs --merge-list allfiles.txt --make-bed --out POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged
 
+
+plink --bfile POST_261_filter_MatchSNPs --bmerge Merged1KG_maf10.matched.bed Merged1KG_maf10.matched.bim Merged1KG_maf10.matched.fam --make-bed --out POST_261_1KG_maf10.matched.merged
+
 #remove acgt
 awk '{if(($5 ~ /A/ && $6 ~ /T/) || ($5 ~ /T/ && $6 ~ /A/) || ($5 ~ /C/ && $6 ~ /G/) || ($5 ~ /G/ && $6 ~ /C/)) print $2}' \
 POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged.bim \
@@ -27,11 +30,20 @@ plink --bfile POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged.noacgt \
 --make-bed \
 --out POST_261__EU_CA_NA_Merged1KG_maf10.matched.merged.acgt.final
 
+plink --bfile POST_261__EU_CA_NA_Merged1KG_maf10.matched.merged.acgt.final \
+--geno 0.2 \
+--maf 0.05 \
+--max-maf .35 \
+--make-bed \
+--out POST_261__EU_CA_NA_Merged1KG_maf10.matched.merged.acgt.final
+
 plink \
 --bfile POST_261__EU_CA_NA_Merged1KG_maf10.matched.merged.acgt.final \
 --genome \
+--nonfounders \
+--maf 0.05 \
 --threads 10 \
---out POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged.acgt.final
+--out POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged.acgt.final.g
 
 plink \
 --bfile POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged.noacgt \
@@ -39,6 +51,9 @@ plink \
 --cluster \
 --mds-plot 6 \
 --out POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged.acgt.final
+
+plink --bfile POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged.acgt.final --freq --out 1KG_merge_final
+
 
 scp hardyra@helix.nih.gov:/data/Hanserv/DATA/Transfusion/WGS/Reference_Chromsome/POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged.acgt.final.mds  Desktop/
 
