@@ -120,14 +120,19 @@ plink --bfile Merged1KG_maf10 --extract POST_261_filter_EU_CA_NA_maf20_update.bi
 
 
 plink2 \
---bfile Merged1KG_maf10.ac_gt_snps \
+--bfile Merged1KG_maf10_noATGCSNPs \
 --rm-dup force-first \
 --make-bed \
---out Merged1KG_maf10.ac_gt_snps_rmdup
+--out Merged1KG_maf10_noATGCSNPs_rmdup
 
+plink2 \
+--bfile POST_261_filter_EU_CA_NA_maf20_update \
+--rm-dup force-first \
+--make-bed \
+--out POST_261_filter_EU_CA_NA_maf20_update.rmdup
 
-
-
+--set-missing-var-ids @:#\$r:\$a \
+--new-id-max-allele-len 23 missing \
 
 
 # create allfiles.txt for merging files to include 1000 Genome and EU_CA_NA information
