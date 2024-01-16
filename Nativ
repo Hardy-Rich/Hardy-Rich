@@ -50,6 +50,17 @@ Merged1KG_maf20_MatchSNPs.fam \
 #1769 variants and 3636 people pass filters and QC.
 
 
+#Make MDS
+plink --bfile POST_261_Merged1KG_maf20.matched.merged \
+--genome \
+--threads 10 \
+--out POST_261_Merged1KG_maf20.matched.merged
+
+
+plink --bfile POST_261_Merged1KG_maf20.matched.merged --cluster --mds-plot 6 --out POST_261_Merged1KG_maf20.matched.merged
+
+
+
 
 
 
