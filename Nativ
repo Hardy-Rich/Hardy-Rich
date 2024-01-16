@@ -62,7 +62,8 @@ plink \
 --mds-plot 6 \
 --out POST_261_filter_EU_CA_NA_1KG
 
-
+plink --bfile POST_261_filter_EU_CA_NA_1KG  --pca
+mv plink.eigenvec POST_261_filter_EU_CA_NA_1KG.eigenvec
 
 
 plink --bfile POST_261_filter_EU_CA_NA_1KG \
@@ -74,6 +75,8 @@ plink --bfile POST_261_filter_EU_CA_NA_1KG \
 #1197 variants removed due to minor allele threshold(s)
 #(--maf/--max-maf/--mac/--max-mac).
 #572 variants and 3636 people pass filters and QC.
+
+
 
 #Make MDS
 plink --bfile POST_261_filter_EU_CA_NA_1KG.QC \
