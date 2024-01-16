@@ -135,6 +135,22 @@ plink2 \
 --new-id-max-allele-len 23 missing \
 
 
+
+
+awk 'BEGIN {OFS="\t"} ($5$6 == "GC" || $5$6 == "CG" || $5$6 == "AT" || $5$6 == "TA") {print $2}' \
+POST_261_Merged1KG_maf10.matched.merged.bim  > POST_261_Merged1KG_maf10.matched.merged.acgt
+
+plink \
+--bfile  POST_261_Merged1KG_maf10.matched.merged \
+--extract POST_261_Merged1KG_maf10.matched.merged.acgt \
+--allow-extra-chr 0 \
+--make-bed \
+--threads 8 \
+--out POST_261_Merged1KG_maf10.matched.merged.acgt
+
+
+
+
 # create allfiles.txt for merging files to include 1000 Genome and EU_CA_NA information
 plink --bfile Merged1KG_maf10 --extract POST_261_filter_MatchSNPs.bim --allow-extra-chr 0 --make-bed --out Merged1KG_maf10.matched
 plink --bfile POST_261_filter_MatchSNPs --merge-list allfiles.txt --make-bed --out POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged
