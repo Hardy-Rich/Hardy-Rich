@@ -27,6 +27,29 @@ awk '{print $2}' \
 #1769 SNPs
 
 
+# Extract common SNPs from FILE1 and FILE2
+plink --bfile POST_261_filter_EU_CA_NA_maf20_update \
+--extract MatchSNPs.txt \
+--make-bed \
+--out POST_261_filter_EU_CA_NA_maf20_MatchSNPs
+# 1769 variants and 434 people pass filters and QC.
+
+plink --bfile Merged1KG_maf20 \
+--extract MatchSNPs.txt \
+--make-bed \
+--out Merged1KG_maf20_MatchSNPs
+# 1769 variants and 3202 people pass filters and QC.
+
+plink --bfile POST_261_filter_EU_CA_NA_maf20_MatchSNPs \
+--bmerge Merged1KG_maf20_MatchSNPs.bed \
+Merged1KG_maf20_MatchSNPs.bim \
+Merged1KG_maf20_MatchSNPs.fam \
+--make-bed \
+--out POST_261_filter_EU_CA_NA_1KG
+
+
+
+
 
 
 
