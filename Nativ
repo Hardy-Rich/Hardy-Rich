@@ -114,7 +114,7 @@ mv plink.eigenvec POST_261_filter_EU_CA_NA_1KG.QC .eigenvec
 ######
 
 plink --bfile Merged1KG_maf10 --exclude Merged1KG_maf10_ATGCSNPs.txt --make-bed --out Merged1KG_maf10_noATGCSNPs
-plink --bfile Merged1KG_maf10 --extract POST_261_filter_EU_CA_NA_maf20_update.bim --allow-extra-chr 0 --make-bed --out Merged1KG_maf10.matched
+plink --bfile Merged1KG_maf10 --extract POST_261_filter_EU_CA_NA_maf10_update.bim --allow-extra-chr 0 --make-bed --out Merged1KG_maf10.matched
 #1365 variants and 3202 people pass filters and QC.
 
 
@@ -135,18 +135,21 @@ plink2 \
 --new-id-max-allele-len 23 missing \
 
 
-
+plink --bfile POST_261_filter_EU_CA_NA_maf10_update \
+--bmerge Merged1KG_maf10.matched.bed Merged1KG_maf10.matched.bim Merged1KG_maf10.matched.fam \
+--make-bed --out POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged   
+#144545 variants and 3636 people pass filters and QC.
 
 awk 'BEGIN {OFS="\t"} ($5$6 == "GC" || $5$6 == "CG" || $5$6 == "AT" || $5$6 == "TA") {print $2}' \
-POST_261_Merged1KG_maf10.matched.merged.bim  > POST_261_Merged1KG_maf10.matched.merged.acgt
+POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged.bim  > POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged.acgt
 
 plink \
---bfile  POST_261_Merged1KG_maf10.matched.merged \
---extract POST_261_Merged1KG_maf10.matched.merged.acgt \
+--bfile  POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged \
+--extract POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged.acgt \
 --allow-extra-chr 0 \
 --make-bed \
 --threads 8 \
---out POST_261_Merged1KG_maf10.matched.merged.acgt
+--out POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged.acgt
 
 
 
