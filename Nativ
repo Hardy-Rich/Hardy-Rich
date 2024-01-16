@@ -76,20 +76,28 @@ plink --bfile POST_261_filter_EU_CA_NA_1KG \
 #(--maf/--max-maf/--mac/--max-mac).
 #572 variants and 3636 people pass filters and QC.
 
+plink \
+--bfile  POST_261_filter_EU_CA_NA_1KG.QC \
+--extract subset.txt \
+--allow-extra-chr 0 \
+--make-bed \
+--threads 8 \
+--out POST_261_filter_EU_CA_NA_1KG.QC.subset
+#399 variants and 3636 people pass filters and QC.
 
 
 #Make MDS
-plink --bfile POST_261_filter_EU_CA_NA_1KG.QC \
+plink --bfile POST_261_filter_EU_CA_NA_1KG.QC.subset \
 --genome \
 --threads 10 \
---out POST_261_filter_EU_CA_NA_1KG.QC
+--out POST_261_filter_EU_CA_NA_1KG.QC.subset
 #572 variants and 3636 people pass filters and QC.
 
 plink \
---bfile POST_261_filter_EU_CA_NA_1KG.QC \
+--bfile POST_261_filter_EU_CA_NA_1KG.QC.subset \
 --cluster \
 --mds-plot 6 \
---out POST_261_filter_EU_CA_NA_1KG.QC
+--out POST_261_filter_EU_CA_NA_1KG.QC.subset
 
 
 plink --bfile POST_261_filter_EU_CA_NA_1KG.QC  --pca
