@@ -110,6 +110,18 @@ plink \
 plink --bfile POST_261_filter_EU_CA_NA_1KG.QC  --pca
 mv plink.eigenvec POST_261_filter_EU_CA_NA_1KG.QC .eigenvec
 
+#######
+######
+
+plink --bfile Merged1KG_maf10 --exclude Merged1KG_maf10_ATGCSNPs.txt --make-bed --out Merged1KG_maf10_noATGCSNPs
+plink --bfile Merged1KG_maf10 --extract POST_261_filter_EU_CA_NA_maf20_update.bim --allow-extra-chr 0 --make-bed --out Merged1KG_maf10.matched
+#1365 variants and 3202 people pass filters and QC.
+
+
+
+
+
+
 
 
 
