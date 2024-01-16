@@ -119,7 +119,11 @@ plink --bfile Merged1KG_maf10 --extract POST_261_filter_EU_CA_NA_maf20_update.bi
 
 
 
-
+plink2 \
+--bfile Merged1KG_maf10.ac_gt_snps \
+--rm-dup force-first \
+--make-bed \
+--out Merged1KG_maf10.ac_gt_snps_rmdup
 
 
 
