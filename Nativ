@@ -5,6 +5,32 @@ module load samtools
 module load plink/1.9.0-beta4.4
 
 ## merge experimental files and chromosomes 
+
+# Extract SNPs common to both FILE1 and FILE2
+awk '{print $1,$2,$4}' \
+POST_261_filter_EU_CA_NA_maf20_update.bim | \
+sort \
+> POST_261_filter_EU_CA_NA_maf20_comm1.txt
+# 104053 SNPs
+
+awk '{print $1,$2,$4}' \
+Merged1KG_maf20.bim | \
+sort \
+> Merged1KG_maf20_comm1.txt
+# 439347 SNPs
+
+comm -12 \
+POST_261_filter_EU_CA_NA_maf20_omm1.txt \
+Merged1KG_maf20_comm1.txt | \
+awk '{print $2}' \
+> MatchSNPs.txt
+#1769 SNPs
+
+
+
+
+
+
 # create allfiles.txt for merging files to include 1000 Genome and EU_CA_NA information
 plink --bfile Merged1KG_maf10 --extract POST_261_filter_MatchSNPs.bim --allow-extra-chr 0 --make-bed --out Merged1KG_maf10.matched
 plink --bfile POST_261_filter_MatchSNPs --merge-list allfiles.txt --make-bed --out POST_261_EU_CA_NA_Merged1KG_maf10.matched.merged
