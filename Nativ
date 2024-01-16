@@ -50,14 +50,28 @@ Merged1KG_maf20_MatchSNPs.fam \
 #1769 variants and 3636 people pass filters and QC.
 
 
+plink --bfile POST_261_filter_EU_CA_NA_1KG \
+--geno 0.05 \
+--maf 0.05 \
+--max-maf .35 \
+--make-bed \
+--out POST_261_filter_EU_CA_NA_1KG.QC
+#1197 variants removed due to minor allele threshold(s)
+#(--maf/--max-maf/--mac/--max-mac).
+#572 variants and 3636 people pass filters and QC.
+
 #Make MDS
-plink --bfile POST_261_Merged1KG_maf20.matched.merged \
+plink --bfile POST_261_filter_EU_CA_NA_1KG.QC \
 --genome \
 --threads 10 \
---out POST_261_Merged1KG_maf20.matched.merged
+--out POST_261_filter_EU_CA_NA_1KG.QC
+#572 variants and 3636 people pass filters and QC.
 
-
-plink --bfile POST_261_Merged1KG_maf20.matched.merged --cluster --mds-plot 6 --out POST_261_Merged1KG_maf20.matched.merged
+plink \
+--bfile POST_261_filter_EU_CA_NA_1KG.QC \
+--cluster \
+--mds-plot 6 \
+--out POST_261_filter_EU_CA_NA_1KG.QC
 
 
 
