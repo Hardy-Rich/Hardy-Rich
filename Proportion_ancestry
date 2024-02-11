@@ -1,0 +1,46 @@
+setwd("/Users/hardyra/Desktop")
+install.packages("reshape2")
+install.packages("RColorBrewer")
+install.packages("ggVennDiagram")
+install.packages("tidyverse")
+install.packages("dplyr")
+install.packages("patchwork")
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+library(readxl)
+library(writexl)
+library(RColorBrewer)
+library(ggVennDiagram)
+library(tidyr)
+library(patchwork)
+
+
+for (i in 1:22){
+ sec =  read.table(paste("rfmix_allsnps_chr",i,".msp.tsv",sep=""), comment.char='', skip=2)
+  sec$count.0 <- apply(sec[7:526], 1, function(x) length(which(x==0)) )
+  sec$count.1 <- apply(sec[7:526], 1, function(x) length(which(x==1)) )
+  sec$count.2 <- apply(sec[7:526], 1, function(x) length(which(x==2)) )
+  thr <- sec [, c("V2", "count.0", "count.1", "count.2")]
+  thr <- thr %>%
+    pivot_longer(
+     cols = c("count.0", "count.1", "count.2" ),
+      names_to="loci",
+     values_to="Prop")
+  thr$V2 = as.character(thr$V2)
+  assign(paste("m",i, sep = ""), print(ggplot (thr, aes(fill=loci, y=Prop, x=V2)) +
+                                            geom_bar(position = "stack", stat="identity") +
+                                         scale_fill_manual("legend", values = c("count.0" = "blue",
+                                                                               "count.1"= "green",
+                                                                               "count.2" = "orange"))+
+                                         theme_void())) 
+  }
+
+
+
+m1 + m2 + m3 + m4+ m5 + m6 + m7 + m8 + m9 + m10+
+  m11+ m12 + m13 + m14+ m15 + m16 + m17 + m18 + m19 + m20+
+  m21+ m22 + 
+  plot_layout(ncol=1, nrow=22, guides = "collect") & theme(legend.position = "none")
+
+ggsave(paste("Av_Ac_Loci.pdf", sep = ""), height = 25, width = 30) 
