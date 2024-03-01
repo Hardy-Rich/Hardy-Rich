@@ -1,0 +1,47 @@
+# Extract SNPs common to both FILE1 and FILE2
+awk '{print $1,$2,$4}' \
+POST_261_filter_maf20.bim | \
+sort \
+> POST_261_filter_comm1.txt
+# 762765 SNPs
+
+awk '{print $1,$2,$4}' \
+EU_CA_NA_maf10.bim | \
+sort \
+> EU_CA_NA_comm1.txt
+# 331823 SNPs
+
+comm -12 \
+POST_261_filter_comm1.txt \
+EU_CA_NA_comm1.txt | \
+awk '{print $2}' \
+> MatchSNPs.txt
+#41664 SNPs
+
+# Extract common SNPs from FILE1 and FILE2
+plink --bfile POST_261_filter_maf20 \
+--extract MatchSNPs.txt \
+--make-bed \
+--out POST_261_filter_MatchSNPs
+# After frequency and genotyping pruning, there are 41664 SNPs
+
+plink --bfile EU_CA_NA_maf10 \
+--extract MatchSNPs.txt \
+--make-bed \
+--out EU_CA_NA_MatchSNPs
+
+# After frequency and genotyping pruning, there are 41664 SNPs
+
+plink --bfile POST_261_filter_MatchSNPs \
+--bmerge EU_CA_NA_MatchSNPs.bed \
+EU_CA_NA_MatchSNPs.bim \
+EU_CA_NA_MatchSNPs.fam \
+--make-bed \
+--out BRA_EU_CA_NA 
+
+41664 variants and 434 people pass filters and QC.
+
+
+
+
+
