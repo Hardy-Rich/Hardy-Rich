@@ -30,6 +30,7 @@ plink --bfile EU_CA_NA_maf10 \
 --make-bed \
 --out EU_CA_NA_MatchSNPs
 
+
 # After frequency and genotyping pruning, there are 41664 SNPs
 
 plink --bfile POST_261_filter_MatchSNPs \
@@ -39,8 +40,65 @@ EU_CA_NA_MatchSNPs.fam \
 --make-bed \
 --out BRA_EU_CA_NA 
 
+Total genotyping rate is 0.393297.
 41664 variants and 434 people pass filters and QC.
 
+# Exclude A/T and G/C SNPs
+awk '{if(($5 ~ /A/ && $6 ~ /T/) || ($5 ~ /T/ && $6 ~ /A/) || ($5 ~ /C/ && $6 ~ /G/) || ($5 ~ /G/ && $6 ~ /C/)) print $2}' \
+BRA_EU_CA_NA.bim \
+> BRA_EU_CA_NA_ATGCSNPs.txt
+
+#6508 SNPs
+
+plink --bfile BRA_EU_CA_NA \
+--exclude BRA_EU_CA_NA_ATGCSNPs.txt \
+--make-bed \
+--out BRA_EU_CA_NA_noATGCSNPs
+
+#35156 variants and 434 people pass filters and QC.
+
+
+# split by chr
+for i in {1..22}
+do 
+plink \
+--bfile BRA_EU_CA_NA_noATGCSNPs \
+--chr ${i} \
+--make-bed \
+--out BRA_EU_CA_NA_allsnps_chr${i}
+done
+
+
+# Convert to vcf
+for i in {1..22}
+do
+plink --bfile BRA_EU_CA_NA_allsnps_chr${i} --keep-allele-order --recode vcf --out BRA_EU_CA_NA_chr${i}
+done
+
+for i in {1..22}
+do
+bgzip BRA_EU_CA_NA_chr${i}.vcf
+done
+
+for i in {1..22}
+do
+tabix -p BRA_EU_CA_NA_chr${i}.vcf.gz
+done
+
+for i in {1..22}
+do
+bcftools +fill-AN-AC BRA_EU_CA_NA_chr${i}.vcf.gz -Ob -o BRA_EU_CA_NA_chr${i}_AC.vcf.gz
+done
+
+for i in {12..22}
+do
+tabix -p vcf BRA_EU_CA_NA_chr${i}_AC.vcf.gz
+done
+
+for i in {12..22}
+do
+phase_common --input BRA_EU_CA_NA_chr${i}_AC.vcf.gz --region chr${i} --map chr${i}.b38.gmap.gz --thread 8 --output BRA_EU_CA_NA_chr${i}_phased.bcf
+done
 
 
 
