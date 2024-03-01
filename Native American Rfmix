@@ -90,15 +90,101 @@ do
 bcftools +fill-AN-AC BRA_EU_CA_NA_chr${i}.vcf.gz -Ob -o BRA_EU_CA_NA_chr${i}_AC.vcf.gz
 done
 
-for i in {12..22}
+for i in {1..22}
 do
-tabix -p vcf BRA_EU_CA_NA_chr${i}_AC.vcf.gz
+bcftools annotate --rename-chrs chr_name_con.txt BRA_EU_CA_NA_chr${i}_AC.vcf.gz | bgzip > BRA_EU_CA_NA_chr${i}_AC_newchr.vcf.gz
 done
 
-for i in {12..22}
+for i in {1..22}
 do
-phase_common --input BRA_EU_CA_NA_chr${i}_AC.vcf.gz --region chr${i} --map chr${i}.b38.gmap.gz --thread 8 --output BRA_EU_CA_NA_chr${i}_phased.bcf
+tabix -p vcf BRA_EU_CA_NA_chr${i}_AC_newchr.vcf.gz
 done
+
+for i in {1..22}
+do
+phase_common --input BRA_EU_CA_NA_chr${i}_AC_newchr.vcf.gz --region chr${i} --map chr${i}.b38.gmap.gz --thread 8 --output BRA_EU_CA_NA_chr${i}_phased.bcf
+done
+
+
+module load samtools
+module load rfmix
+
+
+for i in {1..22}
+do
+bcftools view BRA_EU_CA_NA_chr${i}_phased.bcf > BRA_EU_CA_NA_chr${i}_phased.vcf
+done
+
+for i in {1..22}
+do
+bgzip BRA_EU_CA_NA_chr${i}_phased.vcf
+done
+
+for i in {1..22}
+do
+tabix -p vcf BRA_EU_CA_NA_phased.vcf.gz
+done
+
+
+#Subsetting
+#Create a txt file with Brazilian ID names (bra_samps) and a txt file with EU and CA ID names (eu_ca_sampslist_#forbcftools.txt)
+
+for i in {1..22}
+do
+bcftools \
+view \
+--samples-file bra_samps \
+--force-samples \
+BRA_EU_CA_NA__chr${i}_phased.vcf.gz > \
+BRA_chr${i}_phased_subset.vcf
+done
+
+for i in {1..22}
+do
+bcftools \
+view \
+--samples-file eu_na_samps \
+--force-samples \
+BRA_EU_CA_NA_chr${i}_phased.vcf.gz > \
+EU_CA_NA_chr${i}_subset.vcf
+done
+
+#zip and index
+
+for i in {1..22}
+do
+bgzip BRA_chr${i}_phased_subset.vcf
+done
+
+for i in {1..22}
+do
+tabix -p vcf BRA_chr${i}_phased_subset.vcf.gz
+done
+
+for i in {1..22}
+do
+bgzip EU_CA_NA_chr${i}_subset.vcf
+done
+
+for i in {1..22}
+do
+tabix -p vcf EU_CA_NA_chr${i}_subset.vcf.gz
+done
+
+#rfmix
+
+for i in {1..22}
+do
+rfmix \
+-f BRA_chr${i}_phased_subset.vcf.gz \
+-r EU_CA_NA_chr${i}_subset.vcf.gz \
+-m EU_CA_NA_ref_map.txt  \
+-g chr_bg38_rfmix_edit.txt \
+-o rfmix_allsnps_chr${i} \
+--chromosome=chr${i}
+done
+
+
 
 
 
