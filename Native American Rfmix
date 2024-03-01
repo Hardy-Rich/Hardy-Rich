@@ -72,7 +72,7 @@ done
 # Convert to vcf
 for i in {1..22}
 do
-plink --bfile BRA_EU_CA_NA_allsnps_chr${i} --keep-allele-order --recode vcf --out BRA_EU_CA_NA_chr${i}
+plink --bfile BRA_EU_CA_NA_allsnps_chr${i} --keep-allele-order --recode vcf-iid --out BRA_EU_CA_NA_chr${i}
 done
 
 for i in {1..22}
